@@ -1,16 +1,15 @@
 from pynput.keyboard import Key, Listener, Controller
+from corpus.text import common
+from markov import markov
+from re import sub
 
 keyboard = Controller()
-word_list = []
 word = ""
-
-with open("./words.txt") as f:
-    word_list = f.read().strip().split('\n')
 
 def autocomplete():
     global word
 
-    for known in word_list:
+    for known in common:
         if len(word) >= 0.6 * len(known) and len(word) < len(known) and known.startswith(word):
             start, end = known.index(word) + len(word), len(known)
             keyboard.type(known[start:end])
@@ -21,11 +20,15 @@ def on_press(key):
     global word
 
     try:
-        word += key.char
-        autocomplete()
+        if key.char is not None and key.char.isalpha():
+            word += key.char
     except AttributeError:
-        if key in (Key.enter, Key.space):
-            word = ""
+        if key == Key.space and len(word) > 0:
+                generated = markov.generate_word(sub('\W+', '', word))
+                word = ""
+
+                if generated:
+                    keyboard.type(generated)
 
 def on_release(key):
     if key == Key.esc:

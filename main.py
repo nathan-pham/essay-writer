@@ -24,7 +24,7 @@ def on_press(key):
             word += key.char
     except AttributeError:
         if key == Key.space and len(word) > 0:
-                generated = markov.generate_word(sub('\W+', '', word))
+                generated = markov.generate_word(sub('\W+', '', word.lower()))
                 word = ""
 
                 if generated:
